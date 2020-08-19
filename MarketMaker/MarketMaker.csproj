@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\JsonHelper.cs" />
+    <Compile Include="Common\TimeUtil.cs" />
     <Compile Include="Exchange\ExchangeBase.cs" />
     <Compile Include="Exchange\ExchangeBinance.cs" />
     <Compile Include="Exchange\ExchangeOKEX.cs" />

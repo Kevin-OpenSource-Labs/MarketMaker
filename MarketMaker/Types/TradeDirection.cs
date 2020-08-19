@@ -11,4 +11,11 @@ namespace MarketMaker.Types
         Buy,
         Sell
     }
+    public class TradeDirectionUtil
+    {
+        public static bool IsBuy(TradeDirection dir)
+        {
+            return dir == TradeDirection.Buy;            
+        }
+    }
 }
