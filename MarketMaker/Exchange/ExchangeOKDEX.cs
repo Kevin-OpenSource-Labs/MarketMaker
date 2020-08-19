@@ -91,6 +91,7 @@ namespace MarketMaker.Exchange
         }
         public override bool PlaceOrder(Order order)
         {
+            //Refer API https://documenter.getpostman.com/view/1112175/SzS5u6bE?version=latest#03709c4f-d620-4fef-a36a-f9cb97e909b8
             string url = string.Format("{0}/v1/txs?sync=true", m_urlPrefix);
             //to do, create data-raw... post 
             string json = HttpGet(url);
@@ -128,6 +129,7 @@ namespace MarketMaker.Exchange
         }
         public override void CancelOrder(Order order)
         {
+            //Refer API https://documenter.getpostman.com/view/1112175/SzS5u6bE?version=latest#80a454ec-276c-46b0-91f7-867cb1d5da06
             string url = string.Format("{0}/v1/txs?sync=true",m_urlPrefix);
             //to do, create data-raw... post
             string json = HttpGet(url);
