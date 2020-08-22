@@ -11,7 +11,7 @@ using MarketMaker.Types;
 namespace MarketMaker.Exchange
 {
     public abstract class ExchangeBase
-    {
+    {        
         public virtual void UpdateMarketData(MarketData marketData)
         {
             throw new Exception("Not implement method");
@@ -50,20 +50,18 @@ namespace MarketMaker.Exchange
             //update account symbol volume
             if (record.Direction == TradeDirection.Buy)
             {
-                m_account.adjustStockVolume(record.Symbol, record.TradedVolume);
+                m_marketMakerMgr.GetAccount().adjustStockVolume(record.Symbol, record.TradedVolume);
             }
             else
             {
-                m_account.adjustStockVolume(record.Symbol, -record.TradedVolume);
+                m_marketMakerMgr.GetAccount().adjustStockVolume(record.Symbol, -record.TradedVolume);
             }
 
             //notify quote manager to adjust pending orders if necessary
-            AutoResetEvent quoteEventObj = m_quoteMgr.GetQuoteEventObject();            
+            AutoResetEvent quoteEventObj = m_marketMakerMgr.GetQuoteMgr().GetQuoteEventObject();            
             quoteEventObj.Set();
         }
 
         protected static MarketMakerMgr m_marketMakerMgr = MarketMakerMgr.GetInstance();
-        protected StockAccount m_account = m_marketMakerMgr.GetAccount();
-        protected QuoteMgr m_quoteMgr = m_marketMakerMgr.GetQuoteMgr();
     }
 }

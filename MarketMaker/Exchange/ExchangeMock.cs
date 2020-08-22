@@ -39,7 +39,8 @@ namespace MarketMaker.Exchange
                 StartMockTradeThread();
             }
 
-            order.OrderId = order.OrderTime = (DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss");
+            Thread.Sleep(200);
+            order.OrderId = order.OrderTime = (DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss.fff");
             order.State = OrderState.Submitted;
             order.IsFinished = false;
             m_pendingOrders.Add(order);
@@ -82,13 +83,14 @@ namespace MarketMaker.Exchange
             {
                 while (!m_marketMakerMgr.Stop())
                 {
-                    foreach (Order order in m_pendingOrders)
+                    List<Order> orders = m_pendingOrders.ToList();
+                    foreach (Order order in orders)
                     {
                         if (!order.IsFinished)
                         {
                             //Mock two phase trades
                             TradeRecord record = new TradeRecord();
-                            record.TradeTime = (DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss");
+                            record.TradeTime = (DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss.fff");
                             record.OrderId = order.OrderId;
                             record.Symbol = order.Symbol;
                             record.Direction = order.Direction;

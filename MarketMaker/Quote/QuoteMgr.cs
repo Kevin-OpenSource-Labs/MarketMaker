@@ -23,14 +23,12 @@ namespace MarketMaker.Quote
             {
                 m_quoteEventObj.WaitOne();
                 //update pending order containers
-                foreach (Order order in m_pendingOrders)
-                {
-                    if (order.IsFinished || order.State == OrderState.Cancelling)
-                    {
-                        m_buyPendingOrderMap.Remove(order.OrderId);
-                        m_sellPendingOrderMap.Remove(order.OrderId);
-                        m_pendingOrders.Remove(order);
-                    }
+                List<Order> orders = (from a in m_pendingOrders where a.IsFinished || a.State == OrderState.Cancelling orderby a.OrderId select a).ToList();
+                foreach (Order order in orders)
+                {                    
+                    m_buyPendingOrderMap.Remove(order.OrderId);
+                    m_sellPendingOrderMap.Remove(order.OrderId);
+                    m_pendingOrders.Remove(order);                    
                 }
                 //Quote strategy
                 MarketData marketData = m_marketMaker.GetFairValueMgr().MyMarketData;
@@ -80,7 +78,7 @@ namespace MarketMaker.Quote
                     //buy order
                     if (buyVolume > minVolume)
                     {
-                        Order buyOrder = new Order();
+                        Order buyOrder = new Order { StrategyId = "Maker1" };
                         buyOrder.Symbol = marketData.Symbol;
                         buyOrder.Price = buyPrice;
                         buyOrder.Volume = buyVolume;
@@ -93,7 +91,7 @@ namespace MarketMaker.Quote
                     //sell order
                     if (sellVolume > minVolume)
                     {
-                        Order sellOrder = new Order();
+                        Order sellOrder = new Order { StrategyId = "Maker1" };
                         sellOrder.Symbol = marketData.Symbol;
                         sellOrder.Price = sellPrice;
                         sellOrder.Volume = sellVolume;

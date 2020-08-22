@@ -43,7 +43,8 @@ namespace MarketMaker.RiskControl
             if (m_account.StockPositionMap.ContainsKey(symbol))
             {
                 //cancel hedge orders and remove finished orders
-                foreach (Order order in m_hedgeOrders)
+                List<Order> orders = m_hedgeOrders.ToList();
+                foreach (Order order in orders)
                 {
                     m_exchange.UpdateOrder(order);
                     if (order.IsFinished)
