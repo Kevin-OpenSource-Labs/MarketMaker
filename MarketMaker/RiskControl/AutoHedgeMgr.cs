@@ -76,7 +76,7 @@ namespace MarketMaker.RiskControl
                         sellOrder.Direction = TradeDirection.Sell;
                         sellOrder.Symbol = symbol;
                         sellOrder.Price = m_marketMakerMgr.GetFairValueMgr().MyMarketData.DepthData.Bid[0] * 0.99;
-                        sellOrder.Volume = exposeVolume;
+                        sellOrder.Volume = Math.Round(exposeVolume / 2, 8);
                         if (m_exchange.PlaceOrder(sellOrder))
                         {
                             m_hedgeOrders.Add(sellOrder);
@@ -88,7 +88,7 @@ namespace MarketMaker.RiskControl
                         buyOrder.Direction = TradeDirection.Buy;
                         buyOrder.Symbol = symbol;
                         buyOrder.Price = m_marketMakerMgr.GetFairValueMgr().MyMarketData.DepthData.Ask[0] * 1.01;
-                        buyOrder.Volume = exposeVolume;
+                        buyOrder.Volume = Math.Round(exposeVolume / 2, 8);
                         if (m_exchange.PlaceOrder(buyOrder))
                         {
                             m_hedgeOrders.Add(buyOrder);

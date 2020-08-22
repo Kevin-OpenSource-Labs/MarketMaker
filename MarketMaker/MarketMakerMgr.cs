@@ -28,7 +28,7 @@ namespace MarketMaker
             m_quoteParameter.QuoteVolumeRatioThreshold = 0.01;
             m_quoteParameter.QuotePriceSpreadRatio = 0.01;
             m_quoteParameter.QuotePriceRatioThreshold = 0.005;
-            m_quoteParameter.AutoHedgeVolumeThreshold = 1;
+            m_quoteParameter.AutoHedgeVolumeThreshold = 3;
             
             //quote logic
             m_quoteThread = new Thread(() => m_quoteMgr.Start());

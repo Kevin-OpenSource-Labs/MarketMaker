@@ -48,11 +48,11 @@ namespace MarketMaker.Quote
                     }
                     //To do... Other checks...
 
-                    //quote					
+                    //quote
                     double exposeVolume = m_account.GetExpose(marketData.Symbol);
-                    double buyVolume = Math.Round(m_quoteParameter.QuoteVolume - exposeVolume / 2, 2);
-                    double sellVolume = Math.Round(m_quoteParameter.QuoteVolume + exposeVolume / 2, 2);
-
+                    double buyVolume = Math.Round(m_quoteParameter.QuoteVolume - exposeVolume / 4, 2);
+                    double sellVolume = Math.Round(m_quoteParameter.QuoteVolume + exposeVolume / 4, 2);
+                    
                     //Cancel order too far from target price
                     if (m_buyPendingOrderMap.Count > 0)
                     {
