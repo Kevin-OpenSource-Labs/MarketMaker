@@ -66,7 +66,7 @@ namespace MarketMaker.RiskControl
                 //to do hedge
                 double exposeVolume = m_account.GetExpose(symbol);
                 exposeVolume = Math.Round(exposeVolume, 8);
-                Console.Title = string.Format("[ MarketMaker ] - Expose: {0}", exposeVolume);
+                Console.Title = string.Format("[ MarketMaker ] - Expose: {0}, Pending Orders Count: {1}", exposeVolume, m_marketMakerMgr.GetQuoteMgr().GetPendingOrders().Count);
                 if (Math.Abs(exposeVolume) > m_quoteParameter.AutoHedgeVolumeThreshold)
                 {
                     m_logMgr.Warn(string.Format("Need Hedge, Expose={0}, Threshold={1}", exposeVolume, m_quoteParameter.AutoHedgeVolumeThreshold));

@@ -23,6 +23,10 @@ namespace MarketMaker.Exchange
             //first time to initialized
             if (account.StockPositionMap.Count <= 0)
             {
+                if(null == MarketMakerMgr.GetInstance().GetFairValueMgr().MyMarketData)
+                {
+                    return;
+                }
                 String symbol = MarketMakerMgr.GetInstance().GetFairValueMgr().MyMarketData.Symbol;
                 StockPosition position = new StockPosition();
                 position.BaseVolume = position.TotalVolume = position.AvailVolume = 100;

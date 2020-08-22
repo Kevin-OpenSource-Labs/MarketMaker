@@ -112,6 +112,10 @@ namespace MarketMaker.Quote
                 }
             }
         }
+        public List<Order> GetPendingOrders()
+        {
+            return m_pendingOrders;
+        }
 
         public AutoResetEvent GetQuoteEventObject()
         {
