@@ -29,7 +29,7 @@ namespace MarketMaker.FairValue
                 if (exchange.GetType() == typeof(ExchangeMock))
                 {
                     exchange.UpdateMarketData(MyMarketData);
-                    MyMarketData.FairValue = MyMarketData.DepthData.Mid + 10 *  (new Random()).NextDouble();
+                    MyMarketData.FairValue = Math.Round(MyMarketData.DepthData.Mid + 10 *  (new Random()).NextDouble(), 3);
                     MyMarketData.IsNormal = true;
                     MyMarketData.DepthData.UpdateTime = DateTime.Now;               
                     quoteEventObj.Set();                    
