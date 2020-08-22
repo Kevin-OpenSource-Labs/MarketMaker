@@ -61,6 +61,7 @@ namespace MarketMaker.Quote
                             if (Math.Abs(order.Price - buyPrice) / buyPrice > m_quoteParameter.QuotePriceRatioThreshold)
                             {
                                 m_exchange.CancelOrder(order);
+                                m_logMgr.Info(string.Format("Cancel buy Order {0},{1},{2},{3},{4}", order.OrderId, order.Symbol, order.Direction, order.Volume, order.Price));
                             }
                         }
                     }
@@ -71,6 +72,7 @@ namespace MarketMaker.Quote
                             if (Math.Abs(order.Price - sellPrice) / sellPrice > m_quoteParameter.QuotePriceRatioThreshold)
                             {
                                 m_exchange.CancelOrder(order);
+                                m_logMgr.Info(string.Format("Cancel sell Order {0},{1},{2},{3},{4}", order.OrderId, order.Symbol, order.Direction, order.Volume, order.Price));
                             }
                         }
                     }
@@ -85,7 +87,7 @@ namespace MarketMaker.Quote
                         if (m_exchange.PlaceOrder(buyOrder))
                         {
                             m_buyPendingOrderMap.Add(buyOrder.OrderId, buyOrder);
-                            m_pendingOrders.Add(buyOrder);
+                            m_logMgr.Info(string.Format("Buy Order {0},{1},{2},{3},{4}", buyOrder.OrderId, buyOrder.Symbol, buyOrder.Direction, buyOrder.Volume, buyOrder.Price));
                         }
                     }
                     //sell order
@@ -99,12 +101,13 @@ namespace MarketMaker.Quote
                         {
                             m_sellPendingOrderMap.Add(sellOrder.OrderId, sellOrder);
                             m_pendingOrders.Add(sellOrder);
+                            m_logMgr.Info(string.Format("Sell Order {0},{1},{2},{3},{4}", sellOrder.OrderId, sellOrder.Symbol, sellOrder.Direction, sellOrder.Volume, sellOrder.Price));
                         }
                     }
                 }
                 else
                 {
-                    Console.WriteLine("cancel all pending orders due to abnormal state ...");
+                    m_logMgr.Warn("cancel all pending orders due to abnormal state ...");
                     m_marketMaker.GetExchange().CancelOrders(m_pendingOrders);
                 }
             }
@@ -118,6 +121,7 @@ namespace MarketMaker.Quote
         private SortedDictionary<String, Order> m_sellPendingOrderMap = new SortedDictionary<String, Order>();
         private List<Order> m_pendingOrders = new List<Order>();
 
+        private LogMgr m_logMgr = LogMgr.GetInstance();
         private MarketMakerMgr m_marketMaker = null;
         private ExchangeBase m_exchange = null;
         private StockAccount m_account = null;
