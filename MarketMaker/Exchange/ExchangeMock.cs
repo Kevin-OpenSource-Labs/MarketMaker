@@ -12,11 +12,10 @@ namespace MarketMaker.Exchange
     {
         public override void UpdateMarketData(MarketData marketData)
         {
-            marketData.DepthData.Ask[0] = 1000 + 5 * (new Random()).NextDouble();
-            marketData.DepthData.AskVol[0] = 1;
-            marketData.DepthData.Bid[0] = 1000 - 5 * (new Random()).NextDouble();
-            marketData.DepthData.BidVol[0] = 1;
-            marketData.DepthData.Mid = 1000;
+            marketData.DepthData.AskVol[0] = double.NaN;
+            marketData.DepthData.BidVol[0] = double.NaN;
+            marketData.DepthData.Mid = double.NaN;
+            marketData.DepthData.UpdateTime = DateTime.Now;
         }
 
         public override void UpdateStockAccountInfo(StockAccount account)

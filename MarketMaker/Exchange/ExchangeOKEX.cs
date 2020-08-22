@@ -14,19 +14,21 @@ namespace MarketMaker.Exchange
         {
             if (marketData.Symbol != null && marketData.Symbol != "")
             {
-                string okexHttpUrl = string.Format("https://www.okex.com/api/spot/v3/instruments/%s/book?size=5", marketData.Symbol);
+                string okexHttpUrl = string.Format("https://www.okex.com/api/spot/v3/instruments/{0}/book?size=5", marketData.Symbol);
+                okexHttpUrl = okexHttpUrl.Replace("tbtc", "btc").Replace("tusdk", "usdk");
                 string okexJson = HttpGet(okexHttpUrl);
                 if (okexJson != null && okexJson != "")
                 {
                     //parse okex market data    
-                    var obj = JsonHelper.DeserializeAnonymousType(okexJson, new { asks = new List<double>(), bids = new List<double>() });
+                    var obj = JsonHelper.DeserializeAnonymousType(okexJson, new { asks = new List<double[]>(), bids = new List<double[]>() });
                     MarketDepthData depthData = marketData.DepthData;
-                    depthData.Ask[0] = obj.asks[0];
-                    depthData.Bid[0] = obj.bids[0];                    
+                    depthData.Ask[0] = obj.asks[0][0];
+                    depthData.Bid[0] = obj.bids[0][0];                    
                     if (depthData.Ask[0] > 0 && depthData.Bid[0] > 0)
                     {
                         depthData.Mid = (depthData.Ask[0] + depthData.Bid[0]) / 2;
                     }
+                    depthData.UpdateTime = DateTime.Now;
                 }
             }
         }

@@ -7,6 +7,7 @@ using System.Threading;
 using MarketMaker.Common;
 using MarketMaker.Types;
 using MarketMaker.Exchange;
+using MarketMaker.FairValue;
 
 namespace MarketMaker.RiskControl
 {
@@ -17,6 +18,7 @@ namespace MarketMaker.RiskControl
             m_marketMakerMgr = MarketMakerMgr.GetInstance();
             m_exchange = m_marketMakerMgr.GetExchange();
             m_account = m_marketMakerMgr.GetAccount();
+            m_fairValueMgr = m_marketMakerMgr.GetFairValueMgr();
             m_quoteParameter = m_marketMakerMgr.GetQuoteParameter();
 
             long lastUpdateAccountTime = DateTime.Now.Ticks;
@@ -39,7 +41,11 @@ namespace MarketMaker.RiskControl
 
         public void AutoHedgeIfNeed()
         {
-            String symbol = m_marketMakerMgr.GetFairValueMgr().MyMarketData.Symbol;
+            if(null == m_fairValueMgr.MyMarketData)
+            {
+                return;
+            }
+            String symbol = m_fairValueMgr.MyMarketData.Symbol;
             if (m_account.StockPositionMap.ContainsKey(symbol))
             {
                 //cancel hedge orders and remove finished orders
@@ -59,7 +65,7 @@ namespace MarketMaker.RiskControl
 
                 //to do hedge
                 double exposeVolume = m_account.GetExpose(symbol);
-                exposeVolume = Math.Round(exposeVolume, 3);
+                exposeVolume = Math.Round(exposeVolume, 8);
                 Console.Title = string.Format("[ MarketMaker ] - Expose: {0}", exposeVolume);
                 if (Math.Abs(exposeVolume) > m_quoteParameter.AutoHedgeVolumeThreshold)
                 {
@@ -94,6 +100,7 @@ namespace MarketMaker.RiskControl
 
         private LogMgr m_logMgr = LogMgr.GetInstance();
         private MarketMakerMgr m_marketMakerMgr = null;
+        private FairValueMgr m_fairValueMgr = null;
         private ExchangeBase m_exchange = null;
         private StockAccount m_account = null;
         private QuoteParameter m_quoteParameter = null;

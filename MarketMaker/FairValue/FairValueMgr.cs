@@ -14,50 +14,45 @@ namespace MarketMaker.FairValue
     public class FairValueMgr : SingleTon<FairValueMgr>
     {
         public MarketData MyMarketData = null;
-
+       
         public void Start(string symbol)
         {
-            ExchangeOKEX okexExchange = new ExchangeOKEX();
-            ExchangeBinance binanceExchange = new ExchangeBinance();
             MyMarketData = new MarketData(symbol);
+            ExchangeOKEX okexExchange = new ExchangeOKEX();
+            ExchangeBinance binanceExchange = new ExchangeBinance();            
             while (!m_marketMaker.Stop())
             {
                 ExchangeBase exchange = m_marketMaker.GetExchange();
                 QuoteMgr quoteMgr = m_marketMaker.GetQuoteMgr();
                 AutoResetEvent quoteEventObj = quoteMgr.GetQuoteEventObject();
-                //mock trade
-                if (exchange.GetType() == typeof(ExchangeMock))
+                //Get reference price
+                MarketData okexMarketData = new MarketData(symbol);
+                okexExchange.UpdateMarketData(okexMarketData);
+                MarketData binanceMarketData = new MarketData(symbol);
+                binanceExchange.UpdateMarketData(binanceMarketData);                
+                if (okexMarketData.DepthData.Mid > 0 && binanceMarketData.DepthData.Mid > 0)
                 {
-                    exchange.UpdateMarketData(MyMarketData);
-                    MyMarketData.FairValue = Math.Round(MyMarketData.DepthData.Mid + 10 *  (new Random()).NextDouble(), 3);
-                    MyMarketData.IsNormal = true;
-                    MyMarketData.DepthData.UpdateTime = DateTime.Now;               
-                    quoteEventObj.Set();                    
-                }
-                //real trade
-                else
-                {
-                    MarketData okexMarketData = new MarketData(symbol);
-                    okexExchange.UpdateMarketData(okexMarketData);
-                    MarketData binanceMarketData = new MarketData(symbol);
-                    binanceExchange.UpdateMarketData(binanceMarketData);
-                    if (okexMarketData.DepthData.Mid > 0 && binanceMarketData.DepthData.Mid > 0)
+                    //calculate fair value and market state
+                    double avgMidPrice = (okexMarketData.DepthData.Mid + binanceMarketData.DepthData.Mid) / 2;
+                    MyMarketData.FairValue = avgMidPrice;
+                    if (Math.Abs(okexMarketData.DepthData.Mid / binanceMarketData.DepthData.Mid - 1) >= 0.01)
                     {
-                        //calculate fair value and market state
-                        double avgMidPrice = (okexMarketData.DepthData.Mid + binanceMarketData.DepthData.Mid) / 2;
-                        MyMarketData.FairValue = avgMidPrice;
-                        if (Math.Abs(okexMarketData.DepthData.Mid - binanceMarketData.DepthData.Mid) / 2 >= 0.01)
-                        {
-                            MyMarketData.IsNormal = false;
-                        }
-                        else
-                        {
-                            MyMarketData.IsNormal = true;
-                        }
-                        MyMarketData.DepthData.UpdateTime = DateTime.Now;
-                        quoteEventObj.Set();
+                        MyMarketData.IsNormal = false;
                     }
-                }                                
+                    else
+                    {
+                        MyMarketData.IsNormal = true;
+                    }
+                    //Get current price
+                    exchange.UpdateMarketData(MyMarketData);
+                    //If not mock trade. Execute anti-arbitrage check
+                    if (exchange.GetType() != typeof(ExchangeMock))
+                    {
+
+                    }
+                    MyMarketData.DepthData.UpdateTime = DateTime.Now;
+                    quoteEventObj.Set();
+                }                                              
                 Thread.Sleep(50);
             }
         }

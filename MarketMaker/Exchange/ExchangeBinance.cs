@@ -14,20 +14,22 @@ namespace MarketMaker.Exchange
         {
             if (marketData.Symbol != null && marketData.Symbol != "")
             {
-                string binanceHttpUrl = String.Format("https://api.binance.com/api/v3/depth?symbol=%s&limit=5",
+                string binanceHttpUrl = String.Format("https://api.binance.com/api/v3/depth?symbol={0}&limit=5",
                           marketData.Symbol.Replace("-", "").ToUpper());
+                binanceHttpUrl = binanceHttpUrl.Replace("TBTC_TUSDK", "BTCUSDT");
                 string binanceJson = HttpGet(binanceHttpUrl);
                 if (binanceJson != null && binanceJson != "")
                 {
                     //parse binance market data
-                    var obj = JsonHelper.DeserializeAnonymousType(binanceJson, new { asks = new List<double>(), bids = new List<double>() });                   
+                    var obj = JsonHelper.DeserializeAnonymousType(binanceJson, new { asks = new List<double[]>(), bids = new List<double[]>() });                   
                     MarketDepthData depthData = marketData.DepthData;
-                    depthData.Ask[0] = obj.asks[0];
-                    depthData.Bid[0] = obj.bids[0];
+                    depthData.Ask[0] = obj.asks[0][0];
+                    depthData.Bid[0] = obj.bids[0][0];
                     if (depthData.Ask[0] > 0 && depthData.Bid[0] > 0)
                     {
                         depthData.Mid = (depthData.Ask[0] + depthData.Bid[0]) / 2;
                     }
+                    depthData.UpdateTime = DateTime.Now;
                 }
             }
         }
