@@ -118,7 +118,7 @@ namespace MarketMaker.Exchange
                             m_pendingOrders.Remove(order);
                         }
                     }
-                    Thread.Sleep(2000);
+                    Thread.Sleep(500);
                 }
             });
             m_mockTradeThread.Start();

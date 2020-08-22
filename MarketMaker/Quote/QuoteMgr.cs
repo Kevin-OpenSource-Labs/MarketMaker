@@ -50,8 +50,8 @@ namespace MarketMaker.Quote
 
                     //quote					
                     double exposeVolume = m_account.GetExpose(marketData.Symbol);
-                    double buyVolume = m_quoteParameter.QuoteVolume - exposeVolume;
-                    double sellVolume = m_quoteParameter.QuoteVolume + exposeVolume;
+                    double buyVolume = Math.Round(m_quoteParameter.QuoteVolume - exposeVolume / 2, 2);
+                    double sellVolume = Math.Round(m_quoteParameter.QuoteVolume + exposeVolume / 2, 2);
 
                     //Cancel order too far from target price
                     if (m_buyPendingOrderMap.Count > 0)
@@ -80,7 +80,7 @@ namespace MarketMaker.Quote
                     //buy order
                     if (buyVolume > minVolume)
                     {
-                        Order buyOrder = new Order { StrategyId = "Maker1" };
+                        Order buyOrder = new Order { StrategyId = "Maker1", Direction = TradeDirection.Buy };
                         buyOrder.Symbol = marketData.Symbol;
                         buyOrder.Price = buyPrice;
                         buyOrder.Volume = buyVolume;
@@ -93,7 +93,7 @@ namespace MarketMaker.Quote
                     //sell order
                     if (sellVolume > minVolume)
                     {
-                        Order sellOrder = new Order { StrategyId = "Maker1" };
+                        Order sellOrder = new Order { StrategyId = "Maker1", Direction = TradeDirection.Sell };
                         sellOrder.Symbol = marketData.Symbol;
                         sellOrder.Price = sellPrice;
                         sellOrder.Volume = sellVolume;

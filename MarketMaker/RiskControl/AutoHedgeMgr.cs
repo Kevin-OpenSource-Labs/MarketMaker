@@ -59,11 +59,14 @@ namespace MarketMaker.RiskControl
 
                 //to do hedge
                 double exposeVolume = m_account.GetExpose(symbol);
+                Console.Title = string.Format("[ MarketMaker ] - Expose: {0:f3}", exposeVolume);
                 if (Math.Abs(exposeVolume) > m_quoteParameter.AutoHedgeVolumeThreshold)
                 {
+                    m_logMgr.Warn(string.Format("Need Hedge, Expose={0}, Threshold={1}", exposeVolume, m_quoteParameter.AutoHedgeVolumeThreshold));
                     if (exposeVolume > 0)
                     {
                         Order sellOrder = new Order();
+                        sellOrder.Direction = TradeDirection.Sell;
                         sellOrder.Symbol = symbol;
                         sellOrder.Price = m_marketMakerMgr.GetFairValueMgr().MyMarketData.DepthData.Bid[0] * 0.99;
                         sellOrder.Volume = exposeVolume;
@@ -75,6 +78,7 @@ namespace MarketMaker.RiskControl
                     else
                     {
                         Order buyOrder = new Order();
+                        buyOrder.Direction = TradeDirection.Buy;
                         buyOrder.Symbol = symbol;
                         buyOrder.Price = m_marketMakerMgr.GetFairValueMgr().MyMarketData.DepthData.Ask[0] * 1.01;
                         buyOrder.Volume = exposeVolume;
@@ -87,6 +91,7 @@ namespace MarketMaker.RiskControl
             }
         }
 
+        private LogMgr m_logMgr = LogMgr.GetInstance();
         private MarketMakerMgr m_marketMakerMgr = null;
         private ExchangeBase m_exchange = null;
         private StockAccount m_account = null;
