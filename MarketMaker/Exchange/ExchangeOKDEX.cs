@@ -9,7 +9,7 @@ using MarketMaker.Types;
 namespace MarketMaker.Exchange
 {
     public class ExchangeOKDEX : ExchangeBase
-    {
+    {        
         public override void UpdateMarketData(MarketData marketData)
         {
             if (null != marketData && !string.IsNullOrEmpty(marketData.Symbol))
@@ -22,7 +22,7 @@ namespace MarketMaker.Exchange
                           data = new { asks = new List<SortedDictionary<string, double>>(), bids = new List<SortedDictionary<string, double>>() } });
                     if(obj.code == 0)
                     {
-                        for(int i=0; i<=5; i++)
+                        for(int i=0; i<5; i++)
                         {
                             if(obj.data.asks.Count>i)
                             {
@@ -52,109 +52,155 @@ namespace MarketMaker.Exchange
 
         public override void UpdateStockAccountInfo(StockAccount account)
         {
-            string url = string.Format("{0}/v1/accounts/{1}?show=all", m_urlPrefix, m_adress);
-            string json = HttpGet(url);
-            if (!string.IsNullOrEmpty(json))
+            if (m_marketMakerMgr.MockTrade() && account.StockPositionMap.Count>0)
             {
-                var obj = JsonHelper.DeserializeAnonymousType(json, new
+                return;
+            }
+            else
+            {
+                string url = string.Format("{0}/v1/accounts/{1}?show=all", m_urlPrefix, m_marketMakerMgr.GetSetting().ExchangeSettingMap["Address"]);
+                string json = HttpGet(url);
+                if (!string.IsNullOrEmpty(json))
                 {
-                    code = -1,
-                    data = new { currencies = new List<SortedDictionary<string, string>>() }
-                });
-                if (obj.code == 0)
-                {
-                    SortedSet<string> existingCoinSet = new SortedSet<string>();
-                    foreach(SortedDictionary<string, string> coinDict in obj.data.currencies)
+                    var obj = JsonHelper.DeserializeAnonymousType(json, new
                     {
-                        string coinName = coinDict["symbol"];
-                        double availVol = double.Parse(coinDict["available"]);
-                        double lockedVol = double.Parse(coinDict["locked"]);
-                        if (!account.StockPositionMap.ContainsKey(coinName))
+                        code = -1,
+                        data = new { currencies = new List<SortedDictionary<string, string>>() }
+                    });
+                    if (obj.code == 0)
+                    {
+                        string[] items = m_marketMakerMgr.GetQuoteParameter().Symbol.Split("_".ToArray());
+                        SortedSet<string> existingCoinSet = new SortedSet<string>();
+                        foreach (SortedDictionary<string, string> coinDict in obj.data.currencies)
                         {
-                            account.StockPositionMap[coinName] = new StockPosition { CoinName = coinName };
+                            string coinName = coinDict["symbol"];
+                            //Ignore other coins
+                            if(!items.Contains(coinName))
+                            {
+                                continue;
+                            }                            
+                            double availVol = double.Parse(coinDict["available"]);
+                            double lockedVol = double.Parse(coinDict["locked"]);
+                            if (!account.StockPositionMap.ContainsKey(coinName))
+                            {
+                                account.StockPositionMap[coinName] = new StockPosition { CoinName = coinName };
+                            }
+                            account.StockPositionMap[coinName].AvailVolume = availVol;
+                            account.StockPositionMap[coinName].TotalVolume = availVol + lockedVol;
+                            if(items[0] == coinName)
+                            {
+                                account.StockPositionMap[coinName].BaseVolume = m_marketMakerMgr.GetQuoteParameter().BaseVolume;
+                            }
+                            existingCoinSet.Add(coinName);
                         }
-                        account.StockPositionMap[coinName].AvailVolume = availVol;
-                        account.StockPositionMap[coinName].TotalVolume = availVol + lockedVol;
-                        existingCoinSet.Add(coinName);
-                    }
-                    //Remove non existing coins
-                    List<string> coinNames = account.StockPositionMap.Keys.ToList();
-                    foreach (string coinName in coinNames)
-                    {
-                        if (!existingCoinSet.Contains(coinName))
+                        //Remove non existing coins
+                        List<string> coinNames = account.StockPositionMap.Keys.ToList();
+                        foreach (string coinName in coinNames)
                         {
-                            account.StockPositionMap.Remove(coinName);
-                        }                        
+                            if (!existingCoinSet.Contains(coinName))
+                            {
+                                account.StockPositionMap.Remove(coinName);
+                            }
+                        }
                     }
                 }
             }
         }
         public override bool PlaceOrder(Order order)
         {
-            //Refer API https://documenter.getpostman.com/view/1112175/SzS5u6bE?version=latest#03709c4f-d620-4fef-a36a-f9cb97e909b8
-            string url = string.Format("{0}/v1/txs?sync=true", m_urlPrefix);
-            //to do, create data-raw... post 
-            string json = HttpGet(url);
-            if (!string.IsNullOrEmpty(json))
+            if (m_marketMakerMgr.MockTrade())
             {
-                var obj = JsonHelper.DeserializeAnonymousType(json, new
+                return m_mockExchange.PlaceOrder(order);
+            }
+            else
+            {               
+                //Refer API https://documenter.getpostman.com/view/1112175/SzS5u6bE?version=latest#03709c4f-d620-4fef-a36a-f9cb97e909b8
+                string url = string.Format("{0}/v1/txs?sync=true", m_urlPrefix);
+                //to do, create data-raw... post 
+                string json = HttpGet(url);
+                if (!string.IsNullOrEmpty(json))
                 {
-                    code = -1,
-                    data = new { currencies = new List<SortedDictionary<string, string>>() }
-                });
-                if (obj.code == 0)
-                {
+                    var obj = JsonHelper.DeserializeAnonymousType(json, new
+                    {
+                        code = -1,
+                        data = new { currencies = new List<SortedDictionary<string, string>>() }
+                    });
+                    if (obj.code == 0)
+                    {
 
+                    }
                 }
             }
             return false;
         }
         public override void UpdateOrder(Order order)
         {
-            string url = string.Format("{0}/v1/order/list/deals?address={1}&product={2}&side={3}&start={4}", 
-                m_urlPrefix, m_adress, TradeDirectionUtil.IsBuy(order.Direction)? "BUY" : "SELL", TimeUtil.GetLocalUnixTimestamp(DateTime.Parse(order.OrderTime)));
-            string json = HttpGet(url);
-            if (!string.IsNullOrEmpty(json))
+            if (m_marketMakerMgr.MockTrade())
             {
-                var obj = JsonHelper.DeserializeAnonymousType(json, new
+                m_mockExchange.UpdateOrder(order);
+            }
+            else
+            {               
+                string url = string.Format("{0}/v1/order/list/deals?address={1}&product={2}&side={3}&start={4}",
+                m_urlPrefix, m_marketMakerMgr.GetSetting().ExchangeSettingMap["Address"], 
+                TradeDirectionUtil.IsBuy(order.Direction) ? "BUY" : "SELL", TimeUtil.GetLocalUnixTimestamp(DateTime.Parse(order.OrderTime)));
+                string json = HttpGet(url);
+                if (!string.IsNullOrEmpty(json))
                 {
-                    code = -1,
-                    data = new { currencies = new List<SortedDictionary<string, string>>() }
-                });
-                if (obj.code == 0)
-                {
-                    
+                    var obj = JsonHelper.DeserializeAnonymousType(json, new
+                    {
+                        code = -1,
+                        data = new { currencies = new List<SortedDictionary<string, string>>() }
+                    });
+                    if (obj.code == 0)
+                    {
+
+                    }
                 }
-            }                                            
+            }
         }
         public override void CancelOrder(Order order)
         {
-            //Refer API https://documenter.getpostman.com/view/1112175/SzS5u6bE?version=latest#80a454ec-276c-46b0-91f7-867cb1d5da06
-            string url = string.Format("{0}/v1/txs?sync=true",m_urlPrefix);
-            //to do, create data-raw... post
-            string json = HttpGet(url);
-            if (!string.IsNullOrEmpty(json))
+            if (m_marketMakerMgr.MockTrade())
             {
-                var obj = JsonHelper.DeserializeAnonymousType(json, new
+                m_mockExchange.CancelOrder(order);
+            }
+            else
+            {
+                //Refer API https://documenter.getpostman.com/view/1112175/SzS5u6bE?version=latest#80a454ec-276c-46b0-91f7-867cb1d5da06
+                string url = string.Format("{0}/v1/txs?sync=true", m_urlPrefix);
+                //to do, create data-raw... post
+                string json = HttpGet(url);
+                if (!string.IsNullOrEmpty(json))
                 {
-                    code = -1,
-                    data = new { currencies = new List<SortedDictionary<string, string>>() }
-                });
-                if (obj.code == 0)
-                {
+                    var obj = JsonHelper.DeserializeAnonymousType(json, new
+                    {
+                        code = -1,
+                        data = new { currencies = new List<SortedDictionary<string, string>>() }
+                    });
+                    if (obj.code == 0)
+                    {
 
+                    }
                 }
             }
         }
         public override void CancelOrders(List<Order> orders)
         {
-            foreach(Order order in orders)
+            if (m_marketMakerMgr.MockTrade())
             {
-                CancelOrder(order);
+                m_mockExchange.CancelOrders(orders);
+            }
+            else
+            {
+                foreach (Order order in orders)
+                {
+                    CancelOrder(order);
+                }
             }
         }
-
+        
         private string m_urlPrefix = "https://www.okex.com/okchain";
-        private string m_adress = "okchain1tcuvjeu9q2x84hnrjfqpkwh0r55egqye3daa4f";
+        private ExchangeBase m_mockExchange = new ExchangeMock();
     }
 }

@@ -12,7 +12,7 @@ namespace MarketMaker
         static void Main(string[] args)
         {
             MarketMakerMgr marketMakerMgr = MarketMakerMgr.GetInstance();
-            marketMakerMgr.Start(new ExchangeMock(), "tbtc_tusdk");
+            marketMakerMgr.Start();
         }
     }
 }

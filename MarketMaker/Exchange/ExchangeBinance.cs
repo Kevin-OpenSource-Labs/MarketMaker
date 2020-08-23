@@ -14,9 +14,8 @@ namespace MarketMaker.Exchange
         {
             if (marketData.Symbol != null && marketData.Symbol != "")
             {
-                string binanceHttpUrl = String.Format("https://api.binance.com/api/v3/depth?symbol={0}&limit=5",
-                          marketData.Symbol.Replace("-", "").ToUpper());
-                binanceHttpUrl = binanceHttpUrl.Replace("TBTC_TUSDK", "BTCUSDT");
+                string symbol = ConvertFromDEXSymbol(marketData.Symbol).Replace("_", "").ToUpper();
+                string binanceHttpUrl = String.Format("https://api.binance.com/api/v3/depth?symbol={0}&limit=5", symbol);                
                 string binanceJson = HttpGet(binanceHttpUrl);
                 if (binanceJson != null && binanceJson != "")
                 {

@@ -61,7 +61,10 @@ namespace MarketMaker.Exchange
             AutoResetEvent quoteEventObj = m_marketMakerMgr.GetQuoteMgr().GetQuoteEventObject();            
             quoteEventObj.Set();
         }
-
-        protected static MarketMakerMgr m_marketMakerMgr = MarketMakerMgr.GetInstance();
+        protected string ConvertFromDEXSymbol(string symbol)
+        {
+            return symbol.ToLower().Replace("tbtc", "btc").Replace("tusdk", "usdt");
+        }
+        protected static MarketMakerMgr m_marketMakerMgr = MarketMakerMgr.GetInstance();        
     }
 }

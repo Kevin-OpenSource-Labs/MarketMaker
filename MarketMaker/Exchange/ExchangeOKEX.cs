@@ -14,8 +14,8 @@ namespace MarketMaker.Exchange
         {
             if (marketData.Symbol != null && marketData.Symbol != "")
             {
-                string okexHttpUrl = string.Format("https://www.okex.com/api/spot/v3/instruments/{0}/book?size=5", marketData.Symbol);
-                okexHttpUrl = okexHttpUrl.Replace("tbtc", "btc").Replace("tusdk", "usdk");
+                string symbol = ConvertFromDEXSymbol(marketData.Symbol);
+                string okexHttpUrl = string.Format("https://www.okex.com/api/spot/v3/instruments/{0}/book?size=5", symbol);                
                 string okexJson = HttpGet(okexHttpUrl);
                 if (okexJson != null && okexJson != "")
                 {

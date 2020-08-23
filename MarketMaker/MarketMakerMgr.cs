@@ -15,27 +15,30 @@ namespace MarketMaker
 {
     public class MarketMakerMgr : SingleTon<MarketMakerMgr>
     {
-        public void Start(ExchangeBase exchange, String symbol)
+        public void Start()
         {
-            m_exchange = exchange;
+            m_setting = Setting.GetInstance();
+            if(m_setting.Exchange == null || string.IsNullOrEmpty(m_setting.Parameter.Symbol))
+            {
+                Console.WriteLine("Does not find setting.xml file. Type any key to exist ...");
+                Console.Read();
+                return; 
+            }
+            m_mockTrade = m_setting.IsMockTrade;
+            m_exchange = m_setting.Exchange;
             m_account = new StockAccount();
             m_fairValueMgr = FairValueMgr.GetInstance();            
             m_quoteMgr = QuoteMgr.GetInstance();
             m_hedgeMgr = AutoHedgeMgr.GetInstance();
 
-            m_quoteParameter = new QuoteParameter();
-            m_quoteParameter.QuoteVolume = 1;
-            m_quoteParameter.QuoteVolumeRatioThreshold = 0.01;
-            m_quoteParameter.QuotePriceSpreadRatio = 0.01;
-            m_quoteParameter.QuotePriceRatioThreshold = 0.005;
-            m_quoteParameter.AutoHedgeVolumeThreshold = 3;
+            m_quoteParameter = m_setting.Parameter;        
             
             //quote logic
             m_quoteThread = new Thread(() => m_quoteMgr.Start());
 		    m_quoteThread.Start();
 				
 		    //Update fair value logic
-		    m_marketDataThread = new Thread(()=> m_fairValueMgr.Start(symbol));              
+		    m_marketDataThread = new Thread(()=> m_fairValueMgr.Start(m_setting.Parameter.Symbol));              
 		    m_marketDataThread.Start();		
 				
 		    //Hedge logic
@@ -43,6 +46,10 @@ namespace MarketMaker
 		    m_hedgeThread.Start();            
 	    }
 
+        public Setting GetSetting()
+        {
+            return m_setting;
+        }
         public FairValueMgr GetFairValueMgr()
         {
             return m_fairValueMgr;
@@ -75,7 +82,12 @@ namespace MarketMaker
         {
             return m_stop;
         }
+        public bool MockTrade()
+        {
+            return m_mockTrade;
+        }
 
+        private Setting m_setting = null;
         private ExchangeBase m_exchange = null;
         private StockAccount m_account = null;
         private FairValueMgr m_fairValueMgr = null;
@@ -86,5 +98,6 @@ namespace MarketMaker
         private Thread m_hedgeThread = null;
         private QuoteParameter m_quoteParameter = null;
         private bool m_stop = false;
+        private bool m_mockTrade = false;
     }
 }

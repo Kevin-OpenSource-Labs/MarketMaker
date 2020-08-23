@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Setting>
+	 <Exchange Type="ExchangeOKDEX" MockTrade="1" Address="okchain1tcuvjeu9q2x84hnrjfqpkwh0r55egqye3daa4f" PrivaKey="" />
+   <Quote Symbol="tbtc_tusdk" BaseVolume="1" QuoteVolume="1"  QuoteVolumeRatioThreshold="0.01" QuotePriceSpreadRatio="0.01" QuotePriceRatioThreshold="0.005" AutoHedgeVolumeThreshold="3"/>
+</Setting>
