@@ -31,8 +31,13 @@ namespace MarketMaker
             m_quoteMgr = QuoteMgr.GetInstance();
             m_hedgeMgr = AutoHedgeMgr.GetInstance();
 
-            m_quoteParameter = m_setting.Parameter;        
-            
+            m_quoteParameter = m_setting.Parameter;
+
+            //Test
+            ExchangeOKDEX okdex = m_exchange as ExchangeOKDEX;
+            string privateKey = m_setting.ExchangeSettingMap["PrivateKey"];
+            string key = okdex.GetPublicKey(privateKey);
+
             //quote logic
             m_quoteThread = new Thread(() => m_quoteMgr.Start());
 		    m_quoteThread.Start();

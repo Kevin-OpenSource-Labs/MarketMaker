@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -37,12 +38,41 @@ namespace MarketMaker.Exchange
             throw new Exception("Not implement method");
         }
 
-        public static string HttpGet(String httpUrl)
-        {            
-            String result = null;
-            WebClient webClient = new WebClient();
-            webClient.Headers.Add("Content-Type", "application/json");
-            result = webClient.DownloadString(httpUrl);
+        public static string HttpGet(string url)
+        {
+            string result = null;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.ContentType = "application/json;charset=UTF-8";
+            request.Method = "GET";
+            request.Timeout = 10000;
+            HttpWebResponse httpWebResponse = (HttpWebResponse)request.GetResponse();
+            if (httpWebResponse.StatusCode == HttpStatusCode.OK)
+            {
+                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
+                result = streamReader.ReadToEnd().ToLower();
+            }
+            return result;
+        }
+        public static string HttpPost(string url, string bodyJson)
+        {
+            string result = null;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.ContentType = "application/json;charset=UTF-8";
+            request.Method = "POST";
+            request.Timeout = 10000;
+            if(!string.IsNullOrEmpty(bodyJson))
+            {
+                byte[] postData = Encoding.UTF8.GetBytes(bodyJson);
+                Stream newStream = request.GetRequestStream();
+                newStream.Write(postData, 0, postData.Length);
+                newStream.Close();
+            }
+            HttpWebResponse httpWebResponse = (HttpWebResponse)request.GetResponse();
+            if (httpWebResponse.StatusCode == HttpStatusCode.OK)
+            {
+                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
+                result = streamReader.ReadToEnd().ToLower();
+            }            
             return result;
         }
         protected void NotifyTrade(TradeRecord record)
